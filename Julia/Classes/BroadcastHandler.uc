@@ -1,64 +1,30 @@
 class BroadcastHandler extends Engine.BroadcastHandler
   implements InterestedInEventBroadcast;
 
-/**
- * Copyright (c) 2014-2015 Sergei Khoroshilov <kh.sergei@gmail.com>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
-/**
- * Reference to the Core super object
- * @type class'Core'
- */
-var protected Core Core;
+var Core Core;
 
 /**
  * Reference to the original BroadcastHandler instance
  * (be it Engine.BroadcastHandler or AMMod.BroadcastHandler)
- * @type class'Engine.BroadcastHandler'
  */
-var protected Engine.BroadcastHandler OriginalHandler;
+var Engine.BroadcastHandler OriginalHandler;
 
-/**
- * Initialize the instance and register itself with the OnEventBroacast signal handler
- * 
- * @param   class'Core' Core 
- *          Reference to the Core super object
- * @return  void
- */
+
 public function Init(Core Core)
 {
     self.Core = Core;
-    // Store the original instance
-    self.OriginalHandler = Level.Game.BroadcastHandler;
+
     // Override the Level broadcasthandler instance
+    self.OriginalHandler = Level.Game.BroadcastHandler;
     Level.Game.BroadcastHandler = self;
 
+    // register itself with the OnEventBroacast signal handler
     self.Core.RegisterInterestedInEventBroadcast(self);
 }
 
 /**
  * Attempt to fix an AIDeath event
  * Send AdminMsg events to the AMMod webadmin console
- * 
- * @see InterestedInEventBroadcast.OnEventBroadcast
  */
 public function bool OnEventBroadcast(Player Player, Actor Sender, name Type, out string Msg, optional PlayerController Receiver, optional bool bHidden)
 {
@@ -85,16 +51,6 @@ public function bool OnEventBroadcast(Player Player, Actor Sender, name Type, ou
 
 /**
  * Propagate the event to the original BroadcastHandler instance
- * 
- * @param   class'Actor' Sender
- *          The actor that has issued the event
- * @param   string Msg
- *          Provided message
- * @param   name Type
- *          Event type
- * @param   class'PlayerController' Target (optional, expansion)
- *          The event reciever (if specified)
- * @return  void
  */
 #if IG_SWAT && IG_SPEECH_RECOGNITION
     public function Broadcast(Actor Sender, coerce string Msg, optional name Type, optional PlayerController Target)
@@ -116,14 +72,6 @@ public function bool OnEventBroadcast(Player Player, Actor Sender, name Type, ou
 
 /**
  * Check the event before propagating it to the original BroadcastHandler instance
- * 
- * @param   class'Actor' Sender
- *          The actor that has issued the event
- * @param   string Msg
- *          Provided message
- * @param   name Type
- *          Event type
- * @return  void
  */
 public function BroadcastTeam(Controller Sender, coerce string Msg, optional name Type)
 {
@@ -137,14 +85,6 @@ public function BroadcastTeam(Controller Sender, coerce string Msg, optional nam
 
 /**
  * Check whether the event is allowed to be broadcast into the game
- * 
- * @param   class'Actor' Sender
- *          The actor that has issued the event
- * @param   string Msg (out)
- *          Provided message
- * @param   name Type
- *          Event type
- * @return  bool
  */
 protected function bool CheckEvent(Actor Sender, out coerce string Msg, optional name Type)
 {
@@ -153,9 +93,9 @@ protected function bool CheckEvent(Actor Sender, out coerce string Msg, optional
     // Attempt to get retrieve the sender's Player instance
     if (Sender != None)
     {
-        Player = self.Core.GetServer().GetPlayerByPC(PlayerController(Sender));
+        Player = self.Core.Server.GetPlayerByPC(PlayerController(Sender));
     }
-    
+
     // If one of the listeners do not wish this event to appear in game
     // (for instance, this could be a censored Say/TeamSay event)
     // then don't allow this event to be broadcast at all
@@ -165,10 +105,9 @@ protected function bool CheckEvent(Actor Sender, out coerce string Msg, optional
 /**
  * Attempt to fix an unbroadcast kill event (SwatKill, SwatTeamKill, SuspectsKill, SuspectsTeamKill)
  * Return whether the event has been fixed
- * 
- * @param   string Message
- *          Provided message (e.g. Player1\tPlayer2\tnearby explosion)
- * @return  bool
+ *
+ * @param   Message
+ *          Potential AIDeath message (e.g. Player1\tPlayer2\tnearby explosion)
  */
 protected function bool FixAIDeath(string Message)
 {
@@ -177,7 +116,7 @@ protected function bool FixAIDeath(string Message)
     local Player Killer, Victim;
 
     Args = class'Utils.StringUtils'.static.Part(Message, "\t");
-    // Check whether the victim has been killed either 
+    // Check whether the victim has been killed either
     // with Grenade Explosion or nearby explosion
     switch (Args[2])
     {
@@ -188,8 +127,8 @@ protected function bool FixAIDeath(string Message)
             return false;
     }
 
-    Killer = self.Core.GetServer().GetPlayerByName(Args[0]);
-    Victim = self.Core.GetServer().GetPlayerByName(Args[1]);
+    Killer = self.Core.Server.GetPlayerByName(Args[0]);
+    Victim = self.Core.Server.GetPlayerByName(Args[1]);
 
     if (Killer == None || Victim == None)
     {
@@ -210,7 +149,7 @@ protected function bool FixAIDeath(string Message)
     {
         if (Killer.IsEnemyTo(Victim))
         {
-            FixedType = 'SuspectsKill'; 
+            FixedType = 'SuspectsKill';
         }
         else
         {
@@ -223,23 +162,11 @@ protected function bool FixAIDeath(string Message)
 }
 
 
-/**
- * Propagate an UpdateSentText call to the original broadcast handler
- * 
- * @return void
- */
 public function UpdateSentText()
 {
     self.OriginalHandler.UpdateSentText();
 }
 
-/**
- * Propagate an AllowsBroadcast call to the original broadcast handler
- *
- * @param   class'Actor' Broadcaster
- * @param   int Len
- * @return  bool
- */
 public function bool AllowsBroadcast(Actor Broadcaster, int Len)
 {
     return self.OriginalHandler.AllowsBroadcast(Broadcaster, Len);
@@ -250,11 +177,9 @@ event Destroyed()
     self.Core.UnregisterInterestedInEventBroadcast(self);
     // Restore the original reference
     Level.Game.BroadcastHandler = self.OriginalHandler;
-    
+
     self.Core = None;
     self.OriginalHandler = None;
 
     Super.Destroyed();
 }
-
-/* vim: set ft=java: */

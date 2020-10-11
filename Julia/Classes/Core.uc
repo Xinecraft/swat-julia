@@ -2,186 +2,51 @@ class Core extends SwatGame.SwatMutator
  implements InterestedInMissionEnded,
             InterestedInCommandDispatched;
 
-/**
- * Copyright (c) 2014-2015 Sergei Khoroshilov <kh.sergei@gmail.com>
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
 import enum eSwatGameState from SwatGame.SwatGUIConfig;
 
 /**
  * Package version
- * @type string
  */
-const VERSION = "2.3.1";
+const VERSION = "3.0-dev";
 
 /**
  * Fixed tick rate (seconds)
- * @type float
  */
-const DELTA = 0.1;
+const DELTA = 0.5;
 
-/**
- * Reference to the cache handler instance
- * @type class'Cache'
- */
-var protected Cache Cache;
 
-/**
- * Reference to the locale handler instance
- * @type class'Locale'
- */
-var protected Locale Locale;
+var Cache Cache;
+var Locale Locale;
+var BroadcastHandler BroadcastHandler;
+var Dispatcher Dispatcher;
+var Server Server;
 
-/**
- * Reference to the broadcast handler instance
- * @type class'BroadcastHandler'
- */
-var protected BroadcastHandler BroadcastHandler;
+var array<Extension> BuiltinExtensions;
+var array<InterestedInEventBroadcast> InterestedInEventBroadcast;
+var array<InterestedInInternalEventBroadcast> InterestedInInternalEventBroadcast;
+var array<InterestedInGameStateChanged> InterestedInGameStateChanged;
+var array<InterestedInMissionStarted> InterestedInMissionStarted;
+var array<InterestedInMissionEnded> InterestedInMissionEnded;
+var array<InterestedInPlayerConnected> InterestedInPlayerConnected;
+var array<InterestedInPlayerDisconnected> InterestedInPlayerDisconnected;
+var array<InterestedInPlayerLoaded> InterestedInPlayerLoaded;
+var array<InterestedInPlayerAdminLogged> InterestedInPlayerAdminLogged;
+var array<InterestedInPlayerNameChanged> InterestedInPlayerNameChanged;
+var array<InterestedInPlayerTeamSwitched> InterestedInPlayerTeamSwitched;
+var array<InterestedInPlayerVIPSet> InterestedInPlayerVIPSet;
+var array<InterestedInPlayerPawnChanged> InterestedInPlayerPawnChanged;
+var array<InterestedInPlayerVoiceChanged> InterestedInPlayerVoiceChanged;
 
-/**
- * Reference to the user command dispatcher instance
- * @type class'Dispatcher'
- */
-var protected Dispatcher Dispatcher;
-
-/**
- * Reference to the Server instance
- * @type Server
- */
-var protected Server Server;
-
-/**
- * List of the OnEventBroadcast signal listeners
- * 
- * @type array<interface'InterestedInEventBroadcast'>
- */
-var protected array<InterestedInEventBroadcast> InterestedInEventBroadcast;
-
-/**
- * List of the OnInternalEventBroadcast signal listeners
- * 
- * @type array<interface'InterestedInInternalEventBroadcast'>
- */
-var protected array<InterestedInInternalEventBroadcast> InterestedInInternalEventBroadcast;
-
-/**
- * List of the OnGameStateChanged signal listeners
- * 
- * @type array<interface'InterestedInGameStateChanged'>
- */
-var protected array<InterestedInGameStateChanged> InterestedInGameStateChanged;
-
-/**
- * List of the OnMissionStarted signal listeners
- * 
- * @type array<interface'InterestedInMissionStarted'>
- */
-var protected array<InterestedInMissionStarted> InterestedInMissionStarted;
-
-/**
- * List of the OnMissionEnded signal listeners
- * 
- * @type array<interface'InterestedInMissionEnded'>
- */
-var protected array<InterestedInMissionEnded> InterestedInMissionEnded;
-
-/**
- * List of the OnPlayerConnected signal listeners
- * 
- * @type array<interface'InterestedInPlayerConnected'>
- */
-var protected array<InterestedInPlayerConnected> InterestedInPlayerConnected;
-
-/**
- * List of the OnPlayerDisonnected signal listeners
- * 
- * @type array<interface'InterestedInPlayerDisonnected'>
- */
-var protected array<InterestedInPlayerDisconnected> InterestedInPlayerDisconnected;
-
-/**
- * List of the OnPlayerLoaded signal listeners
- * 
- * @type array<interface'InterestedInPlayerLoaded'>
- */
-var protected array<InterestedInPlayerLoaded> InterestedInPlayerLoaded;
-
-/**
- * List of the OnPlayerAdminLogged signal listeners
- * 
- * @type array<interface'InterestedInPlayerAdminLogged'>
- */
-var protected array<InterestedInPlayerAdminLogged> InterestedInPlayerAdminLogged;
-
-/**
- * List of the OnPlayerNameChanged signal listeners
- * 
- * @type array<interface'InterestedInPlayerNameChanged'>
- */
-var protected array<InterestedInPlayerNameChanged> InterestedInPlayerNameChanged;
-
-/**
- * List of the OnPlayerTeamSwitched signal listeners
- * 
- * @type array<interface'InterestedInPlayerTeamSwitched'>
- */
-var protected array<InterestedInPlayerTeamSwitched> InterestedInPlayerTeamSwitched;
-
-/**
- * List of the OnPlayerVIPSet signal listeners
- * 
- * @type array<interface'InterestedInPlayerVIPSet'>
- */
-var protected array<InterestedInPlayerVIPSet> InterestedInPlayerVIPSet;
-
-/**
- * List of the OnPlayerPawnChanged signal listeners
- * 
- * @type array<interface'InterestedInPlayerPawnChanged'>
- */
-var protected array<InterestedInPlayerPawnChanged> InterestedInPlayerPawnChanged;
-
-/**
- * List of the OnPlayerVoiceChanged signal listeners
- * 
- * @type array<interface'InterestedInPlayerVoiceChanged'>
- */
-var protected array<InterestedInPlayerVoiceChanged> InterestedInPlayerVoiceChanged;
-
-/**
- * Indicate whether the Core instance is enabled
- * @type bool
- */
 var config bool Enabled;
 
 /**
  * Don't let the class to be initialized under certain circumstances
- * 
- * @return  void
  */
 public function PreBeginPlay()
 {
     Super.PreBeginPlay();
     self.Disable('Tick');
-    
+
     if (Level.NetMode == NM_ListenServer || Level.NetMode == NM_DedicatedServer)
     {
         if (Level.Game != None && SwatGameInfo(Level.Game) != None)
@@ -197,18 +62,19 @@ public function PreBeginPlay()
 
 /**
  * Initialize the core instance
- * 
- * @return  void
  */
 public function BeginPlay()
 {
     Super.BeginPlay();
 
-    self.InitCache();
-    self.InitLocale();
-    self.InitBroadcastHandler();
-    self.InitDispatcher();
-    self.InitServer();
+    self.Cache = Spawn(class'Cache');
+    self.BroadcastHandler = Spawn(class'BroadcastHandler');
+    self.BroadcastHandler.Init(self);
+    self.Locale = Spawn(class'Locale');
+    self.Dispatcher = Spawn(class'Dispatcher');
+    self.Dispatcher.Init(self);
+    self.Server = Spawn(class'Server');
+    self.Server.Init(self);
 
     self.RegisterInterestedInMissionEnded(self);
     // Register the !version command
@@ -216,66 +82,25 @@ public function BeginPlay()
         "version", self, self.Locale.Translate("CoreVersionUsage"), self.Locale.Translate("CoreVersionDescription")
     );
 
+    // Init builtin extensions
+    InitExtension(Spawn(class'Admin'));
+    InitExtension(Spawn(class'Chatbot'));
+    InitExtension(Spawn(class'Tracker'));
+    InitExtension(Spawn(class'Whois'));
+    InitExtension(Spawn(class'Stats'));
+    InitExtension(Spawn(class'VIP'));
+    InitExtension(Spawn(class'COOP'));
+
     log("Julia (version " $ class'Core'.const.VERSION $ ") has been initialized");
 }
 
-/**
- * Initialize Cache instance
- * 
- * @return void
- */
-protected function InitCache()
+function InitExtension(Extension Extension)
 {
-    self.Cache = Spawn(class'Cache');
-}
-
-/**
- * Initialize Locale instance
- *
- * @return void
- */
-protected function InitLocale()
-{
-    self.Locale = Spawn(class'Locale');
-}
-
-/**
- * Initialize BroadcastHandler instance
- * 
- * @return  void
- */
-protected function InitBroadcastHandler()
-{
-    self.BroadcastHandler = Spawn(class'BroadcastHandler');
-    self.BroadcastHandler.Init(self);
-}
-
-/**
- * Initialize Dispatcher instance
- * 
- * @return  void
- */
-protected function InitDispatcher()
-{
-    self.Dispatcher = Spawn(class'Dispatcher');
-    self.Dispatcher.Init(self);
-}
-
-/**
- * Initialize Server instance
- * 
- * @return  void
- */
-protected function InitServer()
-{
-    self.Server = Spawn(class'Server');
-    self.Server.Init(self);
+    BuiltinExtensions[BuiltinExtensions.Length] = Extension;
 }
 
 /**
  * Store cache live (memory) data onto disk upon a round end
- * 
- * @return  void
  */
 public function OnMissionEnded()
 {
@@ -283,8 +108,8 @@ public function OnMissionEnded()
 }
 
 /**
- * Reply with package version details 
- * 
+ * Reply with package version details
+ *
  * @see InterestedInCommandDispatched.OnCommandDispatched
  */
 public function OnCommandDispatched(Dispatcher Dispatcher, string Name, string Id, array<string> Args, Player Player)
@@ -295,7 +120,7 @@ public function OnCommandDispatched(Dispatcher Dispatcher, string Name, string I
     {
         case "version":
             Response = class'Utils.StringUtils'.static.Format(
-                "\"Julia\" mod by Serge (%1)\\nhttp://github.com/sergeii/swat-julia", 
+                "\"Julia\" mod by Serge (%1)\\nhttp://github.com/sergeii/swat-julia",
                 class'Core'.const.VERSION
             );
             break;
@@ -305,83 +130,11 @@ public function OnCommandDispatched(Dispatcher Dispatcher, string Name, string I
     Dispatcher.Respond(Id, Response);
 }
 
-/**
- * Return the cache instance
- * 
- * @return  class'Cache'
- */
-public function Cache GetCache()
-{
-    return self.Cache;
-}
-
-/**
- * Return the Locale instance
- * 
- * @return  class'Locale'
- */
-public function Locale GetLocale()
-{
-    return self.Locale;
-}
-
-/**
- * Return the BroadcastHandler instance
- * 
- * @return  class'BroadcastHandler'
- */
-public function BroadcastHandler GetBroadcastHandler()
-{
-    return self.BroadcastHandler;
-}
-
-/**
- * Return the Dispatcher instance
- * 
- * @return  class'Dispatcher'
- */
-public function Dispatcher GetDispatcher()
-{
-    return self.Dispatcher;
-}
-
-/**
- * Return the Server instance
- * 
- * @return  class'Server'
- */
-public function Server GetServer()
-{
-    return self.Server;
-}
-
-/**
- * Return the list of player controllers
- * 
- * @return  array<class'Player'>
- */
-public function array<Player> GetPlayers()
-{
-    return self.Server.GetPlayers();
-}
-
-/**
- * Register an InterestedInEventBroadcast instance with the OnEventBroadcast event signal handler
- * 
- * @param   interface'InterestedInEventBroadcast' Interested
- * @return  void
- */
 public function RegisterInterestedInEventBroadcast(InterestedInEventBroadcast Interested)
 {
     self.InterestedInEventBroadcast[self.InterestedInEventBroadcast.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInEventBroadcast instance from the OnEventBroadcast event signal handler
- * 
- * @param   interface'InterestedInEventBroadcast' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInEventBroadcast(InterestedInEventBroadcast Uninterested)
 {
     local int i;
@@ -395,24 +148,6 @@ public function UnregisterInterestedInEventBroadcast(InterestedInEventBroadcast 
     }
 }
 
-/**
- * Trigger an OnEventBroadcast event signal
- * Return false if any of receivers prohibit the event from appearing in game
- *
- * Receivers are also allowed to alter the final event message
- *
- * @param   class'Player' Player
- *          Player instance of the sender
- * @param   class'Actor' Sender
- *          Reference to the original sender actor
- * @param   name Type
- *          Event type
- * @param   string Msg (out)
- *          Optional event message
- * @param   class'PlayerController' Receiver (optional)
- *          Optional event target
- * @return  bool
- */
 public function bool TriggerOnEventBroadcast(Player Player, Actor Sender, name Type, out string Msg, optional PlayerController Receiver)
 {
     local int i;
@@ -432,23 +167,11 @@ public function bool TriggerOnEventBroadcast(Player Player, Actor Sender, name T
     return !bHidden;
 }
 
-/**
- * Register an InterestedInInternalEventBroadcast instance with the OnInternalEventBroadcast event signal handler
- * 
- * @param   interface'InterestedInInternalEventBroadcast' Interested
- * @return  void
- */
 public function RegisterInterestedInInternalEventBroadcast(InterestedInInternalEventBroadcast Interested)
 {
     self.InterestedInInternalEventBroadcast[self.InterestedInInternalEventBroadcast.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInInternalEventBroadcast instance from the OnInternalEventBroadcast event signal handler
- * 
- * @param   interface'InterestedInInternalEventBroadcast' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInInternalEventBroadcast(InterestedInInternalEventBroadcast Uninterested)
 {
     local int i;
@@ -462,19 +185,6 @@ public function UnregisterInterestedInInternalEventBroadcast(InterestedInInterna
     }
 }
 
-/**
- * Trigger an OnInternalEventBroadcast signal
- * 
- * @param   name Type
- *          Event type
- * @param   string Message (optional)
- *          Optional event message
- * @param   class'Player' PlayerOne (optional)
- * @param   class'Player' PlayerTwo (optional)
- *          Reference to participating players
- * @return  void
- */
-
 public function TriggerOnInternalEventBroadcast(name Type, optional string Msg, optional Player PlayerOne, optional Player PlayerTwo)
 {
     local int i;
@@ -487,23 +197,11 @@ public function TriggerOnInternalEventBroadcast(name Type, optional string Msg, 
     }
 }
 
-/**
- * Register an InterestedInGameStateChanged instance with the OnGameStateChanged event signal handler
- * 
- * @param   interface'InterestedInGameStateChanged' Interested
- * @return  void
- */
 public function RegisterInterestedInGameStateChanged(InterestedInGameStateChanged Interested)
 {
     self.InterestedInGameStateChanged[self.InterestedInGameStateChanged.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInGameStateChanged instance from the OnGameStateChanged event signal handler
- * 
- * @param   interface'InterestedInGameStateChanged' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInGameStateChanged(InterestedInGameStateChanged Uninterested)
 {
     local int i;
@@ -517,13 +215,6 @@ public function UnregisterInterestedInGameStateChanged(InterestedInGameStateChan
     }
 }
 
-/**
- * Trigger an OnGameStateChanged signal
- * 
- * @param   enum'ESwatGameState' OldState
- * @param   enum'ESwatGameState' NewState
- * @return  void
- */
 public function TriggerOnGameStateChanged(eSwatGameState OldState, eSwatGameState NewState)
 {
     local int i;
@@ -536,23 +227,11 @@ public function TriggerOnGameStateChanged(eSwatGameState OldState, eSwatGameStat
     }
 }
 
-/**
- * Register an InterestedInMissionStarted instance with the OnMissionStarted event signal handler
- * 
- * @param   interface'InterestedInMissionStarted' Interested
- * @return  void
- */
 public function RegisterInterestedInMissionStarted(InterestedInMissionStarted Interested)
 {
     self.InterestedInMissionStarted[self.InterestedInMissionStarted.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInMissionStarted instance from the OnMissionStarted event signal handler
- * 
- * @param   interface'InterestedInMissionStarted' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInMissionStarted(InterestedInMissionStarted Uninterested)
 {
     local int i;
@@ -566,11 +245,6 @@ public function UnregisterInterestedInMissionStarted(InterestedInMissionStarted 
     }
 }
 
-/**
- * Trigger an OnMissionStarted signal
- * 
- * @return  void
- */
 public function TriggerOnMissionStarted()
 {
     local int i;
@@ -583,23 +257,11 @@ public function TriggerOnMissionStarted()
     }
 }
 
-/**
- * Register an InterestedInMissionEnded instance with the OnMissionEnded event signal handler
- * 
- * @param   interface'InterestedInMissionEnded' Interested
- * @return  void
- */
 public function RegisterInterestedInMissionEnded(InterestedInMissionEnded Interested)
 {
     self.InterestedInMissionEnded[self.InterestedInMissionEnded.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInMissionEnded instance from the OnMissionEnded event signal handler
- * 
- * @param   interface'InterestedInMissionEnded' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInMissionEnded(InterestedInMissionEnded Uninterested)
 {
     local int i;
@@ -613,11 +275,6 @@ public function UnregisterInterestedInMissionEnded(InterestedInMissionEnded Unin
     }
 }
 
-/**
- * Trigger an OnMissionEnded signal
- * 
- * @return  void
- */
 public function TriggerOnMissionEnded()
 {
     local int i;
@@ -630,23 +287,11 @@ public function TriggerOnMissionEnded()
     }
 }
 
-/**
- * Register an InterestedInPlayerConnected instance with the OnPlayerConnected event signal handler
- * 
- * @param   interface'InterestedInPlayerConnected' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerConnected(InterestedInPlayerConnected Interested)
 {
     self.InterestedInPlayerConnected[self.InterestedInPlayerConnected.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerConnected instance from the OnPlayerConnected event signal handler
- * 
- * @param   interface'InterestedInPlayerConnected' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerConnected(InterestedInPlayerConnected Uninterested)
 {
     local int i;
@@ -660,13 +305,6 @@ public function UnregisterInterestedInPlayerConnected(InterestedInPlayerConnecte
     }
 }
 
-/**
- * Notify the OnPlayerConnected event listeners
- * 
- * @param   class'Player' Player
- *          Reference to the player controller of the connected player
- * @return  void
- */
 public function TriggerOnPlayerConnected(Player Player)
 {
     local int i;
@@ -679,23 +317,11 @@ public function TriggerOnPlayerConnected(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerDisconnected instance with the OnPlayerDisconnected event signal handler
- * 
- * @param   interface'InterestedInPlayerDisconnected' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerDisconnected(InterestedInPlayerDisconnected Interested)
 {
     self.InterestedInPlayerDisconnected[self.InterestedInPlayerDisconnected.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerDisconnected instance from the OnPlayerDisconnected event signal handler
- * 
- * @param   interface'InterestedInPlayerDisconnected' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerDisconnected(InterestedInPlayerDisconnected Uninterested)
 {
     local int i;
@@ -709,13 +335,6 @@ public function UnregisterInterestedInPlayerDisconnected(InterestedInPlayerDisco
     }
 }
 
-/**
- * Notify the OnPlayerDisconnected event listeners
- * 
- * @param   class'Player' Player
- *          Reference to the player controller of the disconnected player
- * @return  void
- */
 public function TriggerOnPlayerDisconnected(Player Player)
 {
     local int i;
@@ -728,23 +347,11 @@ public function TriggerOnPlayerDisconnected(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerLoaded instance with the OnPlayerLoaded event signal handler
- * 
- * @param   interface'InterestedInPlayerLoaded' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerLoaded(InterestedInPlayerLoaded Interested)
 {
     self.InterestedInPlayerLoaded[self.InterestedInPlayerLoaded.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerLoaded instance from the OnPlayerLoaded event signal handler
- * 
- * @param   interface'InterestedInPlayerLoaded' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerLoaded(InterestedInPlayerLoaded Uninterested)
 {
     local int i;
@@ -758,13 +365,6 @@ public function UnregisterInterestedInPlayerLoaded(InterestedInPlayerLoaded Unin
     }
 }
 
-/**
- * Trigger an OnPlayerLoaded signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller of the loaded player
- * @return  void
- */
 public function TriggerOnPlayerLoaded(Player Player)
 {
     local int i;
@@ -777,23 +377,11 @@ public function TriggerOnPlayerLoaded(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerAdminLogged instance with the OnPlayerAdminLogged event signal handler
- * 
- * @param   interface'InterestedInPlayerAdminLogged' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerAdminLogged(InterestedInPlayerAdminLogged Interested)
 {
     self.InterestedInPlayerAdminLogged[self.InterestedInPlayerAdminLogged.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerAdminLogged instance from the OnPlayerAdminLogged event signal handler
- * 
- * @param   interface'InterestedInPlayerAdminLogged' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerAdminLogged(InterestedInPlayerAdminLogged Uninterested)
 {
     local int i;
@@ -807,13 +395,6 @@ public function UnregisterInterestedInPlayerAdminLogged(InterestedInPlayerAdminL
     }
 }
 
-/**
- * Trigger an OnPlayerAdminLogged signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller of the logged in player
- * @return  void
- */
 public function TriggerOnPlayerAdminLogged(Player Player)
 {
     local int i;
@@ -826,23 +407,11 @@ public function TriggerOnPlayerAdminLogged(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerNameChanged instance with the OnPlayerNameChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerNameChanged' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerNameChanged(InterestedInPlayerNameChanged Interested)
 {
     self.InterestedInPlayerNameChanged[self.InterestedInPlayerNameChanged.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerNameChanged instance from the OnPlayerNameChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerNameChanged' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerNameChanged(InterestedInPlayerNameChanged Uninterested)
 {
     local int i;
@@ -856,15 +425,6 @@ public function UnregisterInterestedInPlayerNameChanged(InterestedInPlayerNameCh
     }
 }
 
-/**
- * Trigger a OnPlayerNameChanged signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller instance
- * @param   string OldName
- *          Previous player name
- * @return  void
- */
 public function TriggerOnPlayerNameChanged(Player Player, string OldName)
 {
     local int i;
@@ -877,23 +437,11 @@ public function TriggerOnPlayerNameChanged(Player Player, string OldName)
     }
 }
 
-/**
- * Register an InterestedInPlayerTeamSwitched instance with the OnPlayerTeamSwitched event signal handler
- * 
- * @param   interface'InterestedInPlayerTeamSwitched' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerTeamSwitched(InterestedInPlayerTeamSwitched Interested)
 {
     self.InterestedInPlayerTeamSwitched[self.InterestedInPlayerTeamSwitched.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerTeamSwitched instance from the OnPlayerTeamSwitched event signal handler
- * 
- * @param   interface'InterestedInPlayerTeamSwitched' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerTeamSwitched(InterestedInPlayerTeamSwitched Uninterested)
 {
     local int i;
@@ -907,13 +455,6 @@ public function UnregisterInterestedInPlayerTeamSwitched(InterestedInPlayerTeamS
     }
 }
 
-/**
- * Trigger an OnPlayerTeamSwitched signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller instance
- * @return  void
- */
 public function TriggerOnPlayerTeamSwitched(Player Player)
 {
     local int i;
@@ -926,23 +467,11 @@ public function TriggerOnPlayerTeamSwitched(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerVIPSet instance with the OnPlayerVIPSet event signal handler
- * 
- * @param   interface'InterestedInPlayerVIPSet' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerVIPSet(InterestedInPlayerVIPSet Interested)
 {
     self.InterestedInPlayerVIPSet[self.InterestedInPlayerVIPSet.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerVIPSet instance from the OnPlayerVIPSet event signal handler
- * 
- * @param   interface'InterestedInPlayerVIPSet' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerVIPSet(InterestedInPlayerVIPSet Uninterested)
 {
     local int i;
@@ -956,13 +485,6 @@ public function UnregisterInterestedInPlayerVIPSet(InterestedInPlayerVIPSet Unin
     }
 }
 
-/**
- * Trigger an OnPlayerVIPSet signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller instance
- * @return  void
- */
 public function TriggerOnPlayerVIPSet(Player Player)
 {
     local int i;
@@ -975,23 +497,11 @@ public function TriggerOnPlayerVIPSet(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerPawnChanged instance with the OnPlayerPawnChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerPawnChanged' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerPawnChanged(InterestedInPlayerPawnChanged Interested)
 {
     self.InterestedInPlayerPawnChanged[self.InterestedInPlayerPawnChanged.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerPawnChanged instance from the OnPlayerPawnChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerPawnChanged' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerPawnChanged(InterestedInPlayerPawnChanged Uninterested)
 {
     local int i;
@@ -1005,13 +515,6 @@ public function UnregisterInterestedInPlayerPawnChanged(InterestedInPlayerPawnCh
     }
 }
 
-/**
- * Trigger an OnPlayerPawnSpawned signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller instance
- * @return  void
- */
 public function TriggerOnPlayerPawnChanged(Player Player)
 {
     local int i;
@@ -1024,23 +527,11 @@ public function TriggerOnPlayerPawnChanged(Player Player)
     }
 }
 
-/**
- * Register an InterestedInPlayerVoiceChanged instance with the OnPlayerVoiceChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerVoiceChanged' Interested
- * @return  void
- */
 public function RegisterInterestedInPlayerVoiceChanged(InterestedInPlayerVoiceChanged Interested)
 {
     self.InterestedInPlayerVoiceChanged[self.InterestedInPlayerVoiceChanged.Length] = Interested;
 }
 
-/**
- * Unregister an InterestedInPlayerVoiceChanged instance from the OnPlayerVoiceChanged event signal handler
- * 
- * @param   interface'InterestedInPlayerVoiceChanged' Uninterested
- * @return  void
- */
 public function UnregisterInterestedInPlayerVoiceChanged(InterestedInPlayerVoiceChanged Uninterested)
 {
     local int i;
@@ -1054,13 +545,7 @@ public function UnregisterInterestedInPlayerVoiceChanged(InterestedInPlayerVoice
     }
 }
 
-/**
- * Trigger an OnPlayerVoiceChanged signal
- * 
- * @param   class'Player' Player
- *          Reference to the player controller instance 
- * @return  void
- */
+
 public function TriggerOnPlayerVoiceChanged(Player Player)
 {
     local int i;
@@ -1072,6 +557,7 @@ public function TriggerOnPlayerVoiceChanged(Player Player)
         self.InterestedInPlayerVoiceChanged[i].OnPlayerVoiceChanged(Player);
     }
 }
+
 
 event Destroyed()
 {
@@ -1089,6 +575,15 @@ event Destroyed()
     self.InterestedInPlayerVIPSet.Remove(0, self.InterestedInPlayerVIPSet.Length);
     self.InterestedInPlayerPawnChanged.Remove(0, self.InterestedInPlayerPawnChanged.Length);
     self.InterestedInPlayerVoiceChanged.Remove(0, self.InterestedInPlayerVoiceChanged.Length);
+
+    while (BuiltinExtensions.Length > 0)
+    {
+        if (BuiltinExtensions[0] != None)
+        {
+            BuiltinExtensions[0].Destroy();
+        }
+        BuiltinExtensions.Remove(0, 1);
+    }
 
     if (self.Cache != None)
     {
@@ -1123,4 +618,7 @@ event Destroyed()
     Super.Destroyed();
 }
 
-/* vim: set ft=java: */
+defaultproperties
+{
+    Enabled=true;
+}
